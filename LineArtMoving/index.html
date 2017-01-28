@@ -68,7 +68,7 @@ canvas {
 				canvas.context.strokeStyle = "rgba(250,"+pointSet[i].y*8+",0,1)"
 				canvas.context.arcTo(pointSet[i].x*2,pointSet[i].y,pointSet[i+1].x*2,pointSet[i+1].y,pointSet[i].w)
 				
-				points.push({"x":pointSet[i].x,"y":pointSet[i].y,"w":pointSet[i].w})
+				points.push({"x":pointSet[i].x,"y":pointSet[i].y,"w":pointSet[i].w,"xAnchor":pointSet[i].x,"yAnchor":pointSet[i].y})
 
 				
 
@@ -98,14 +98,30 @@ canvas {
 		for(var r = 0; r<400;r++){
 			//canvas.context.moveTo(pointSetNew[r][0].x,pointSetNew[r][0].y)
 			//canvas.context.moveTo(0,0);
+
+			for(var c1 = 0; c1<pointSetNew[0].length-1;c1++){
+				pointSetNew[r][c1].y+=Math.sin(pointSetNew[r][c1].x/10 + step/10);
+				var xD = .1*Math.cos(pointSetNew[r][c1].y/10 + step/10);
+				//pointSetNew[r][c1].x+= xD
+				
+				if(Math.abs(pointSetNew[r][c1].x -pointSetNew[r][c1].xAnchor) > 10 ){
+					//pointSetNew[r][c1].x-= 2*xD
+				}
+				
+				
+			}
+			pointSetNew[r].sort(function compare(a,b){return a.x-b.x})
+			//pointSetNew[r].sort(function compare(a,b){return a.y-b.y})
 			canvas.context.beginPath();
+
 			for(var c = 0; c<pointSetNew[0].length-1; c++){
 				
-				pointSetNew[r][c].y+=.08*Math.sin(pointSetNew[r][c].x/10 + step/10);
-				pointSetNew[r][c].x-=.08*Math.cos(pointSetNew[r][c].y/10 + step/10);
+				//pointSetNew[r][c].y+=.08*Math.sin(pointSetNew[r][c].x/10 + step/10);
+				//pointSetNew[r][c].x-=.08*Math.cos(pointSetNew[r][c].y/10 + step/10);
 				//pointSetNew[r][c].w+=.1*Math.cos(step/10);
 				//pointSetNew[r][c].w%=30
-				pointSetNew[r][c].w = Math.abs(pointSetNew[r][c].w)
+
+				
 				canvas.context.arcTo(pointSetNew[r][c].x*2,pointSetNew[r][c].y ,pointSetNew[r][c+1].x*2,pointSetNew[r][c+1].y,pointSetNew[r][c].w)
 				//console.log(  pointSetNew[r][c]  );
 				//canvas.context.arcTo(0,0,1,1,1)
