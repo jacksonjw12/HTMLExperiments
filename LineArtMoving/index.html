@@ -17,8 +17,8 @@ canvas {
 	canvas.element.width = canvas.width
 	canvas.context = canvas.element.getContext("2d");
 	
-	var position = {"x":0,"y":-100,"z":5,"w":10,"position":{"x":0,"y":-50,"z":5}}
-	var pointSet = [{"x":0,"y":-50,"z":5,"w":10,"position":{"x":0,"y":-50,"z":5}}]
+	var position = {"x":-100,"y":-100,"z":5,"w":10,"position":{"x":0,"y":-50,"z":5}}
+	var pointSet = [{"x":-100,"y":-50,"z":5,"w":10,"position":{"x":0,"y":-50,"z":5}}]
 	var pointSetNew = []
 	var lineSet = [];
 	function draw(){
@@ -68,7 +68,7 @@ canvas {
 				canvas.context.strokeStyle = "rgba(250,"+pointSet[i].y*8+",0,1)"
 				canvas.context.arcTo(pointSet[i].x*2,pointSet[i].y,pointSet[i+1].x*2,pointSet[i+1].y,pointSet[i].w)
 				
-				points.push({"x":pointSet[i].x,"y":pointSet[i].y,"w":pointSet[i].w,"xAnchor":pointSet[i].x,"yAnchor":pointSet[i].y})
+				points.push({"x":pointSet[i].x,"y":pointSet[i].y,"w":pointSet[i].w,"xAnchor":pointSet[i].x,"yAnchor":pointSet[i].y,"xAnchorConst":pointSet[i].x,"yAnchorConst":pointSet[i].y, "wAnchor":pointSet[i].w})
 
 				
 
@@ -100,13 +100,18 @@ canvas {
 			//canvas.context.moveTo(0,0);
 
 			for(var c1 = 0; c1<pointSetNew[0].length-1;c1++){
-				pointSetNew[r][c1].y+=Math.sin(pointSetNew[r][c1].x/10 + step/10);
+				pointSetNew[r][c1].xAnchor = pointSetNew[r][c1].xAnchorConst+10*Math.sin(step/100)
+
+				pointSetNew[r][c1].y+=Math.sin(pointSetNew[r][c1].xAnchorConst/10 + step/10);
 				var xD = .1*Math.cos(pointSetNew[r][c1].y/10 + step/10);
 				//pointSetNew[r][c1].x+= xD
-				
+				//pointSetNew[r][c1].w = Math.abs(pointSetNew[r][c1].wAnchor + Math.tan(step) )
+
 				if(Math.abs(pointSetNew[r][c1].x -pointSetNew[r][c1].xAnchor) > 10 ){
 					//pointSetNew[r][c1].x-= 2*xD
 				}
+				pointSetNew[r][c1].x = pointSetNew[r][c1].xAnchor+ 1.2*Math.sin(step*pointSetNew[r][c1].xAnchor/canvas.width+pointSetNew[r][c1].xAnchor)
+
 				
 				
 			}
