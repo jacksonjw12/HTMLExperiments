@@ -1,0 +1,268 @@
+
+<html>
+<body>
+<img src="foggysunrise-1.jpg" id="image">
+<canvas id="botCanvas"></canvas>
+
+<canvas id="canvas"></canvas>
+<canvas id="topCanvas"></canvas>
+
+<style>
+#canvas {
+	z-index:2;
+	position:absolute;
+	left:0px;
+	top:0px;
+
+}
+#topCanvas {
+	z-index:3;
+	position:absolute;
+	left:0%;
+	top:0%;
+
+}
+
+#botCanvas {
+	z-index:1;
+	position:absolute;
+	left:0%;
+	top:0%;
+}
+
+</style>
+<script>
+	var canvas = {"width":window.innerWidth,"height":window.innerHeight,"context":null}
+	var c = document.getElementById("canvas")
+	c.width = canvas.width;
+	c.height = canvas.height;
+	canvas.context = c.getContext('2d');
+
+
+	var tc = document.getElementById("topCanvas")
+	var topCanvas = {"width":window.innerWidth,"height":window.innerHeight,"context":null}
+	tc.width = topCanvas.width;
+	tc.height = topCanvas.height;
+	topCanvas.context = tc.getContext('2d');
+
+	var bc = document.getElementById("botCanvas")
+	var botCanvas = {"width":window.innerWidth,"height":window.innerHeight,"context":null}
+	bc.width = botCanvas.width;
+	bc.height = botCanvas.height;
+	botCanvas.context = bc.getContext('2d');
+
+
+
+	var i = document.getElementById("image")
+	image.width = canvas.width;
+	image.height = canvas.height;
+
+
+
+	canvas.context.fillStyle = 'blue'
+	canvas.context.clearRect(0,0,canvas.width,canvas.height);
+	topCanvas.context.fillStyle = 'white'
+	topCanvas.context.clearRect(0,0,canvas.width,canvas.height);
+
+	botCanvas.context.clearRect(0,0,canvas.width,canvas.height);
+
+	var points = [{"x":100,"y":100,"velX":0,"velY":0,"speed":1,"radius":5}];
+	var drops = [{"x":100,"y":-30,"velX":0,"velY":100,"len":30}]
+
+	var mousePos = {"x":canvas.width/2,"y":canvas.height/2};
+	var time = {"sinceLastStep":0,"lastStep":Date.now(),"startDate":Date.now()}
+
+	canvas.context.fillRect(0,0,100,100)
+
+
+	function step(){
+
+		console.log(drops[0].y)
+		
+		botCanvas.context.clearRect(0,0,canvas.width,canvas.height)
+
+		addParticles();
+		rainPhysics();
+		
+		renderScene();
+		topCanvas.context.globalCompositeOperation = 'source-over'
+		topCanvas.context.globalAlpha = .2;
+		topCanvas.context.fillStyle="rgba(220,220,220,.04)";
+
+		topCanvas.context.fillRect(0,0,canvas.width,canvas.height)
+		
+		//canvas.context.putImageData(bgData,0,0)
+		window.setTimeout(step,20)
+	}
+
+	function addParticles(){
+		var chance = Math.floor(Math.random()*5)/50
+			if(Math.random() < chance){
+				var rad = 4*Math.random() + 4
+				
+				points.push({"x":Math.random()*1000,"y":-rad,"velX":0,"velY":Math.random()*50+100,"speed":1,"radius":rad})
+
+
+			}
+
+		var chanceDrops =  Math.floor(Math.random()*5)/2;
+		if(Math.random() < chanceDrops){
+			var len = 15*Math.random() + 85
+			drops.push({"x":Math.random()*1000,"y":-len,"velX":0,"velY":Math.random()*50+150,"speed":1,"len":len})
+
+		}
+
+		
+	}
+	function speed(point){
+		var speed = Math.sqrt(point.velX * point.velX + point.velY * point.velY);
+		return speed;
+	}
+	function rainPhysics(){
+		var now = Date.now();
+		time.sinceLastStep = (now-time.lastStep)/1;
+		var pointsLength = points.length;
+		for(var i = 0; i<pointsLength-1; i++){
+			//console.log(points[i])
+			if(speed(points[i]) > 40){
+				var chance = Math.floor(Math.random()*points[i].radius)/50
+				if(Math.random() < chance){
+					points.push({"x":points[i].x,"y":points[i].y-points[i].radius,"velX":0,"velY":0,"speed":1,"radius":points[i].radius/8})
+					points[i].radius = Math.sqrt(points[i].radius*points[i].radius-points[i].radius*points[i].radius/64)
+
+				}
+			}
+			points[i].x += points[i].velX * time.sinceLastStep/1000 * points[i].speed*2;
+			points[i].y += points[i].velY * time.sinceLastStep/1000 * points[i].speed*2;
+
+
+
+			var stopSpeed = 1;
+			if(points[i].velY > stopSpeed){
+				points[i].velY-=stopSpeed;
+			}
+			else if(points[i].velY > 0){
+				points[i].velY = 0;
+			}
+			if(points[i].velY < -stopSpeed){
+				points[i].velY+=stopSpeed;
+			}
+			else if(points[i].velY < 0){
+				points[i].velY = 0;
+			}
+			if(points[i].velX > stopSpeed){
+				points[i].velX-=stopSpeed;
+			}
+			else if(points[i].velX > 0){
+				points[i].velX = 0;
+			}
+			if(points[i].velX < -stopSpeed){
+				points[i].velX+=stopSpeed;
+			}
+			else if(points[i].velX < 0){
+				points[i].velX = 0;
+			}
+			var spliced = -1
+			//combineParticles
+		for(var p = 0; p<pointsLength; p++){
+			
+				var diameter = points[p].radius + points[i].radius;
+				var distance = distBetweenPoints(points[p],points[i]);
+				if(p != i && distance.dist < diameter){
+					//points.splice(p,1);
+					var massP = Math.pow(points[p].radius,2)
+					var pR = points[p].radius
+					var pI = points[i].radius
+
+					var massI = Math.pow(pI,2)
+
+					var midPointX = (points[i].x*massI+points[p].x*massP)/(massP + massI)
+					var midPointY = (points[i].y*massI+points[p].y*massP)/(massP + massI)
+					points[i].x = midPointX;
+					points[i].y = midPointY;
+					points[i].radius = Math.sqrt(Math.pow(points[i].radius,2) + Math.pow(points[p].radius,2)/2)
+					
+					var combinedVelX = (points[p].velX*massP + points[i].velX*massI)/(massI + massP)
+					var combinedVelY = (points[p].velY*massP + points[i].velY*massI)/(massI + massP)
+					points[i].velX = combinedVelX;
+					points[i].velY = combinedVelY;
+					points[i].velY = 6*points[i].radius
+					points[i].velX = - distance.dx*4
+					spliced = p;
+					pointsLength--;
+					points.splice(p,1);
+				}
+			
+		}
+
+		for(var d = 0; d< drops.length; d++){
+			drops[d].x+=drops[d].velX * time.sinceLastStep/1000;
+			drops[d].y+= drops[d].velY * time.sinceLastStep/100000;
+
+
+
+		}
+
+
+
+
+		if(points[i].x > canvas.width+points[i].radius || points[i].x < 0 ||points[i].y > canvas.height+points[i].radius){
+			pointsLength--;
+			points.splice(i,1);
+		}
+
+
+		}
+		time.lastStep = now;
+
+
+	}
+	function distBetweenPoints(point1,point2){
+		var dx = point2.x-point1.x;
+		var dy = point2.y-point1.y;
+		var dist = Math.sqrt(dx*dx+dy*dy);
+		return {"dist":dist,"dx":dx,"dy":dy};
+	}
+
+
+	function renderScene(){
+		canvas.context.fillStyle = 'white'//'#00bbbb'
+		canvas.context.clearRect(0,0,canvas.width,canvas.height);
+		canvas.context.fillStyle = 'rgba(100,100,200,.6)'
+		canvas.context.globalAlpha = 0.4 ;
+		
+		
+		topCanvas.context.fillStyle = "black"
+		topCanvas.context.globalCompositeOperation = 'destination-out'
+		topCanvas.context.globalAlpha = 1
+		
+		for(var p = 0; p<points.length; p++){
+			canvas.context.beginPath();
+			canvas.context.arc(points[p].x,points[p].y,points[p].radius,0,Math.PI*2,false);
+			canvas.context.fill();
+
+			topCanvas.context.beginPath();
+			topCanvas.context.arc(points[p].x,points[p].y,Math.abs(points[p].radius-1),0,Math.PI*2,false);
+			topCanvas.context.fill();
+			
+
+		}
+		topCanvas.context.globalAlpha = 1
+		topCanvas.context.globalCompositeOperation = 'source-over'
+		botCanvas.context.fillStyle ="rgba(100,100,130,.6)";
+		for(var r = 0; r<drops.length; r++){
+			botCanvas.context.fillRect(drops[r].x,drops[r].y,2,drops[r].len)
+
+		}
+
+			
+	}
+	for(var i = 0; i<1000; i++){
+		points.push({"x":Math.random()*canvas.width,"y":Math.random()*canvas.height+4,"velX":0,"velY":0,"speed":1,"radius":4+ Math.random()})
+	}
+	step();
+
+</script>
+</body>
+</html>
+
