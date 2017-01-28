@@ -1,0 +1,222 @@
+<html>
+<body>
+<img id="image" src="spaghetti.jpg" style="z-index:0;">
+<canvas id="canvas"  style="z-index:2;position:absolute;left:0px;top:0px;"></canvas>
+<div id="settings">
+
+</div>
+
+<script>
+
+	var i = document.getElementById("image");
+ 	i.width = window.innerWidth;
+ 	i.height = window.innerHeight;
+	var canvas = {"width":window.innerWidth,"height":window.innerHeight,"context":null}
+	var c = document.getElementById("canvas")
+	c.width = canvas.width;
+	c.height = canvas.height;
+	canvas.context = c.getContext('2d');
+	
+	canvas.context.fillStyle = 'white'
+	canvas.context.fillRect(0,0,canvas.width,canvas.height);
+
+
+	var slurp = false;
+
+
+
+	var noodles = []//{"x":canvas.width/2,"y":canvas.height/2,"velX":10*(Math.random()-.5),"velY":10*(Math.random()-.5),"angle":0,"speed":50,"intersectionPoints":[{"x":canvas.width/2,"y":canvas.height/2}],"angleAim":0,"angleVelocity":0,"angleSpeed":10,"stopped":false}]
+	var stepCount = 0
+	var time = {"sinceLastStep":0,"lastStep":Date.now(),"startDate":Date.now()}
+
+	function step(){
+		canvas.context.clearRect(0,0,canvas.width,canvas.height)
+		if(stepCount > 400){
+
+			slurp = true;
+			var spaghetti = new Audio('slurp.mp3');
+			
+			if(stepCount % 20 == 0 &&slurp){
+				spaghetti.play();
+			}
+			
+		}
+
+		
+		if(!slurp){
+			if(stepCount % 20 == 0){
+				addPasta();
+
+			}
+			doPhysics();
+			doRender();
+		}
+		else{
+			doRenderSlurp();
+		}
+		stepCount++;
+
+		window.setTimeout(step,10);
+	}
+
+	function addPasta(){
+		var which = Math.floor(Math.random()*4);
+		if(which == 0){
+			noodles.push({"x":0,"y":canvas.height*Math.random(),"velX":10,"velY":0,"angle":0,"speed":50,"intersectionPoints":[],"angleAim":0,"angleVelocity":0,"angleSpeed":10});
+		}
+		else if(which == 1){
+			noodles.push({"x":canvas.width,"y":canvas.height*Math.random(),"velX":-10,"velY":0,"angle":0,"speed":50,"intersectionPoints":[],"angleAim":0,"angleVelocity":0,"angleSpeed":10});
+		}
+		else if(which == 2){
+			noodles.push({"x":canvas.width*Math.random(),"y":0,"velX":0,"velY":10,"angle":0,"speed":50,"intersectionPoints":[],"angleAim":0,"angleVelocity":0,"angleSpeed":10});
+		}
+		else if(which == 3){
+			noodles.push({"x":canvas.width*Math.random(),"y":canvas.height,"velX":0,"velY":-10,"angle":0,"speed":50,"intersectionPoints":[],"angleAim":0,"angleVelocity":0,"angleSpeed":10});
+		}
+		
+	}
+
+	function doPhysics(){
+		var now = Date.now();
+		time.sinceLastStep = (now-time.lastStep)/1;
+		for(var n = 0; n < noodles.length; n++){
+			var noodle = noodles[n]
+			if(!noodle.stopped){
+				if(Math.abs(noodle.angleAim-noodle.angle) < noodle.angleSpeed*time.sinceLastStep/1000){//at angle
+					noodle.angleAim = Math.random()*2*Math.PI
+				}
+				if(Math.abs(noodle.angleAim-noodle.angle) < Math.PI){//in reg.direction
+					if(noodle.angleAim > noodle.angle){
+						noodle.angle += noodle.angleSpeed*time.sinceLastStep/1000
+					}
+					else {
+						noodle.angle -= noodle.angleSpeed*time.sinceLastStep/1000
+					}
+				}
+				else{
+					if(noodle.angleAim > noodle.angle){
+						noodle.angle -= noodle.angleSpeed*time.sinceLastStep/1000
+					}
+					else {
+						noodle.angle += noodle.angleSpeed*time.sinceLastStep/1000
+					}
+				}
+				if(noodle.angle > Math.PI * 2){
+					noodle.angle %= Math.PI*2
+				}
+				else if(noodle.angle < 0){
+					noodle.angle = Math.PI*2 + noodle.angle
+				}
+				noodle.angle += Math.random()*time.sinceLastStep/600;
+				 //noodle.angleVelocity+=noodle.angleAcceleration*time.sinceLastStep/1000;
+				 //noodle.angle+=noodle.angleVelocity*time.sinceLastStep/1000;
+				 var dYV = Math.sin(noodle.angle)*noodle.speed*time.sinceLastStep/1000+Math.random()/4;
+				 var dXV = Math.cos(noodle.angle)*noodle.speed*time.sinceLastStep/1000+Math.random()/4;
+				 noodle.x+=dXV*10
+				 noodle.y+=dYV*10
+
+				 if(noodle.x > canvas.width+100 || noodle.x < -100){
+				 	noodle.stopped = true;
+				 }
+				 else if(noodle.y > canvas.height+100 || noodle.y < -100){
+				 	noodle.stopped = true;
+
+				 }
+
+				 //noodle.x+=noodle.velX*time.sinceLastStep/1000;
+				 //noodle.y+=noodle.velY*time.sinceLastStep/1000;
+				 if(stepCount % 1 == 0){
+				 	noodle.intersectionPoints.push({"x":noodle.x,"y":noodle.y})
+				 	//console.log(noodles[n].x)
+				 	//canvas.context.fillRect(noodles[n].x,noodles[n].y,10,10)
+
+
+				}
+			}
+			
+
+		}
+		time.lastStep = now;
+	}
+
+
+	function doRender(){
+		canvas.context.strokeStyle = 'black'
+		canvas.context.fillStyle = 'black'
+		canvas.context.lineWidth = 9;
+
+		for(var n = 0; n < noodles.length; n++){
+			canvas.context.beginPath();
+			canvas.context.moveTo(noodles[n].intersectionPoints[0], noodles[n].intersectionPoints[1])
+			for(var nPlace = 1; nPlace < noodles[n].intersectionPoints.length; nPlace++){
+				canvas.context.lineTo(noodles[n].intersectionPoints[nPlace].x,noodles[n].intersectionPoints[nPlace].y)
+				//canvas.context.fillRect(noodles[n].intersectionPoints[nPlace].x,noodles[n].intersectionPoints[nPlace].y,10,10)
+			}
+			canvas.context.stroke();
+		}
+		canvas.context.strokeStyle = '#FFD966'
+
+		canvas.context.lineWidth = 7;
+
+		for(var n = 0; n < noodles.length; n++){
+			canvas.context.beginPath();
+			canvas.context.moveTo(noodles[n].intersectionPoints[0], noodles[n].intersectionPoints[1])
+			for(var nPlace = 1; nPlace < noodles[n].intersectionPoints.length; nPlace++){
+				canvas.context.lineTo(noodles[n].intersectionPoints[nPlace].x,noodles[n].intersectionPoints[nPlace].y)
+				//canvas.context.fillRect(noodles[n].intersectionPoints[nPlace].x,noodles[n].intersectionPoints[nPlace].y,10,10)
+			}
+			canvas.context.stroke();
+		}
+
+
+	}
+	function doRenderSlurp(){
+		canvas.context.strokeStyle = 'black'
+		canvas.context.fillStyle = 'black'
+		canvas.context.lineWidth = 9;
+
+		for(var n = 0; n < noodles.length; n++){
+			canvas.context.beginPath();
+			canvas.context.moveTo(noodles[n].intersectionPoints[0], noodles[n].intersectionPoints[1])
+			for(var nPlace = 1; nPlace < noodles[n].intersectionPoints.length; nPlace++){
+				canvas.context.lineTo(noodles[n].intersectionPoints[nPlace].x,noodles[n].intersectionPoints[nPlace].y)
+				//canvas.context.fillRect(noodles[n].intersectionPoints[nPlace].x,noodles[n].intersectionPoints[nPlace].y,10,10)
+			}
+			canvas.context.stroke();
+		}
+		canvas.context.strokeStyle = '#FFD966'
+
+		canvas.context.lineWidth = 7;
+
+		var sl = false;
+		for(var n = 0; n < noodles.length; n++){
+			canvas.context.beginPath();
+			canvas.context.moveTo(noodles[n].intersectionPoints[0], noodles[n].intersectionPoints[1])
+			for(var nPlace = 1; nPlace < noodles[n].intersectionPoints.length; nPlace++){
+				canvas.context.lineTo(noodles[n].intersectionPoints[nPlace].x,noodles[n].intersectionPoints[nPlace].y)
+				sl = true;
+				//canvas.context.fillRect(noodles[n].intersectionPoints[nPlace].x,noodles[n].intersectionPoints[nPlace].y,10,10)
+			}
+			canvas.context.stroke();
+
+			noodles[n].intersectionPoints.splice(noodles[n].intersectionPoints.length-2,2);
+		}
+		slurp = sl
+		if(!slurp){
+			var meatball = new Audio('meatball.mp3');
+			meatball.play();
+			noodles = []
+			stepCount = 0;
+		}
+
+	}
+
+
+
+	step();
+</script>
+
+
+
+</body>
+</html>
