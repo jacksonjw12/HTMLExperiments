@@ -1,0 +1,106 @@
+<html>
+<body>
+<canvas id="Canvas">
+
+
+<script>
+	var canvas = {"width":1000,"height":600}
+	canvas.element = document.getElementById("Canvas");
+	canvas.element.height = canvas.height
+	canvas.element.width = canvas.width
+	canvas.context = canvas.element.getContext("2d");
+	
+	var position = {"x":0,"y":-50,"z":5,"w":10,"position":{"x":0,"y":-50,"z":5}}
+	var pointSet = [{"x":0,"y":-50,"z":5,"w":10,"position":{"x":0,"y":-50,"z":5}}]
+	var pointSetNew = []
+	function draw(){
+		canvas.context.fillStyle = "white";
+		canvas.context.fillRect(0,0,canvas.width,canvas.height);
+				canvas.context.strokeStyle = "black";
+
+		canvas.context.moveTo(0,0)
+		
+		canvas.context.beginPath();
+		
+
+		for(var i = 0; i<100;i+=1){
+			var r = Math.random()*Math.PI/16-Math.PI/32
+			
+			position.x = position.x+Math.cos(r)*20*Math.random()+10;
+			position.y = position.y+Math.sin(r)*20*Math.random()+2;
+			pointSet.push({"x":position.x,"y":position.y,"z":position.z,"w":Math.random()*10+10,"position":JSON.parse(JSON.stringify(position))});
+
+			//canvas.context.arcTo(pointSet[i].x*10,pointSet[i].y,pointSet[i+1].x*5,pointSet[i+1].y,1)
+			
+			//console.log(position)
+			
+		}
+		canvas.context.stroke();
+		//console.log(pointSet.length)
+
+		//console.log(pointSetCopy)
+		for(var j = 0; j<400;j+=1){
+			canvas.context.beginPath();
+			
+			for(var i = 0; i<pointSet.length-1;i++){
+				//pointSet[i].x += Math.random();
+				
+				pointSet[i].z +=Math.random()*6-3+2-Math.atan(pointSet[i].x)/2;
+				if(pointSet[i].z > 3){
+					pointSet[i].z = 3;
+				}
+				if(pointSet[i].z < -3){
+					pointSet[i].z = -3;
+				}
+				if(Math.abs(pointSet[i].z) < .2 && pointSet[i].z != 0){
+					pointSet[i].z += .1*Math.abs(pointSet[i].z)/(pointSet[i].z)
+				}
+				else if(pointSet[i].z == 0){
+					pointSet[i].z += .1
+				}
+				pointSet[i].y += pointSet[i].z+.8;
+				pointSet[i].x += Math.cos(pointSet[i].z)/10;
+				canvas.context.strokeStyle = "rgba(250,"+pointSet[i].y*8+",0,1)"
+				canvas.context.arcTo(pointSet[i].x*2,pointSet[i].y,pointSet[i+1].x*2,pointSet[i+1].y,pointSet[i].w)
+				pointSetNew.push(pointSet.slice())
+
+			}
+			canvas.context.stroke();
+			
+						
+
+		}
+		
+		//setTimeout(drawAgain, 500);
+		
+
+	}
+	
+
+	function drawAgain(){
+		canvas.context.fillStyle = "white";
+		canvas.context.fillRect(0,0,canvas.width,canvas.height)
+		canvas.context.fillStyle = "black"
+		for(var r = 0; r<100; r++){
+			canvas.context.moveTo(pointSetNew[r][0].x,pointSetNew[r][0].y)
+			canvas.context.beginPath();
+			for(var c = 0; c<pointSetNew[0].length-1; c++){
+				canvas.context.arcTo(pointSetNew[r][c].x*2,pointSetNew[r][c].y/10+r*20,pointSetNew[r][c+1].x*2,pointSetNew[r][c+1].y/10,pointSetNew[r][c].w)
+				//console.log(  pointSetNew[r][c]  );
+				//canvas.context.arcTo(0,0,1,1,1)
+				//console.log(pointSetNew[r][c].y)
+			}
+			canvas.context.stroke();
+		}
+		console.log(123)
+	}
+
+
+
+	setTimeout(draw, 0);
+
+
+</script>
+
+</body>
+</html>
