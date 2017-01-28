@@ -1,16 +1,23 @@
 <html>
 <body>
 <canvas id="Canvas">
-
+<style>
+body {
+	margin:0;
+}
+canvas {
+	margin:0;
+}
+</style>
 
 <script>
-	var canvas = {"width":1000,"height":600}
+	var canvas = {"width":window.innerWidth,"height":window.innerHeight}
 	canvas.element = document.getElementById("Canvas");
 	canvas.element.height = canvas.height
 	canvas.element.width = canvas.width
 	canvas.context = canvas.element.getContext("2d");
 	
-	var position = {"x":0,"y":-50,"z":5,"w":10,"position":{"x":0,"y":-50,"z":5}}
+	var position = {"x":0,"y":-100,"z":5,"w":10,"position":{"x":0,"y":-50,"z":5}}
 	var pointSet = [{"x":0,"y":-50,"z":5,"w":10,"position":{"x":0,"y":-50,"z":5}}]
 	var pointSetNew = []
 	function draw(){
@@ -82,10 +89,10 @@
 		canvas.context.fillRect(0,0,canvas.width,canvas.height)
 		canvas.context.fillStyle = "black"
 		for(var r = 0; r<100; r++){
-			canvas.context.moveTo(pointSetNew[r][0].x,pointSetNew[r][0].y)
+			canvas.context.moveTo(pointSetNew[r][0].x,pointSetNew[r][0].y-100)
 			canvas.context.beginPath();
 			for(var c = 0; c<pointSetNew[0].length-1; c++){
-				canvas.context.arcTo(pointSetNew[r][c].x*2,pointSetNew[r][c].y/10+r*20,pointSetNew[r][c+1].x*2,pointSetNew[r][c+1].y/10,pointSetNew[r][c].w)
+				canvas.context.arcTo(pointSetNew[r][c].x*2,pointSetNew[r][c].y/10+r*20 - 100,pointSetNew[r][c+1].x*2,pointSetNew[r][c+1].y/10 - 100,pointSetNew[r][c].w)
 				//console.log(  pointSetNew[r][c]  );
 				//canvas.context.arcTo(0,0,1,1,1)
 				//console.log(pointSetNew[r][c].y)
